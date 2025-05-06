@@ -6,24 +6,31 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String SECRET = "qazwsxedcrfvtgbyhnujmik,ol.pqazwsxedcrfvtgbyhnujmikwsxedcrfvtgbyhnuj";
-    private final Integer EXP = 3600;
+    private final String SECRET = "qazwsxedcrfvtgbyhnujmikolpqazwsxedcrfvtgbyhnujmikwsxedcrfvtgbyhnujqazwsxedcrfvtgbyhnujmikolpqazwsxedcrfvtgbyhnujmikwsxedcrfvtgbyhnuj";
+    private final Integer EXP = 3600 * 1000;
 
     public String generateToken(String subject) {
         return Jwts.builder()
                 .setSubject(subject)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXP))
-                .signWith(Keys.hmacShaKeyFor(SECRET.getBytes()), SignatureAlgorithm.HS512)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET.getBytes());
+    }
+
     public String getSubject(String token) {
-        return Jwts.parser().setSigningKey(SECRET)
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
@@ -35,7 +42,9 @@ public class JwtUtil {
     }
 
     private boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parser().setSigningKey(SECRET)
+        Date expiration = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getExpiration();

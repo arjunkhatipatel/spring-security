@@ -21,14 +21,9 @@ public class AuthService {
     public String login(Users user) {
         Optional<Users> us = userRepository.findByUsername(user.getUsername());
 
-        System.out.println(us);
-
         if (us.isPresent()) {
-            System.out.println("present");
             if (passwordEncoder.matches(user.getPassword(), us.get().getPassword())) {
-                String token = jwtUtil.generateToken(user.getUsername());
-                System.out.println("Token >> " + token);
-                return token;
+                return jwtUtil.generateToken(user.getUsername());
             }else {
                 return null;
             }
