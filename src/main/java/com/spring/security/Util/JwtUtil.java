@@ -1,5 +1,6 @@
 package com.spring.security.Util;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -7,16 +8,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtUtil {
     private final String SECRET = "qazwsxedcrfvtgbyhnujmikolpqazwsxedcrfvtgbyhnujmikwsxedcrfvtgbyhnujqazwsxedcrfvtgbyhnujmikolpqazwsxedcrfvtgbyhnujmikwsxedcrfvtgbyhnuj";
     private final Integer EXP = 3600 * 1000;
 
-    public String generateToken(String subject) {
+    public String generateToken(UserDetails userDetails) {
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
         return Jwts.builder()
-                .setSubject(subject)
+                .setSubject(userDetails.getUsername())
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXP))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
@@ -24,16 +30,23 @@ public class JwtUtil {
     }
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
     public String getSubject(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    public String getRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
+
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
