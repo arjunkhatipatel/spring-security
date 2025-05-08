@@ -49,11 +49,7 @@ public class JwtUtil {
     }
 
     public boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
+        Date expiration = extractAllClaims(token)
                 .getExpiration();
         return expiration.before(new Date());
     }
