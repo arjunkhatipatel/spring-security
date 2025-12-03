@@ -40,9 +40,16 @@ public class AuthService {
         return null;
     }
 
-    public Users signup(Users user) {
+    public String signup(Users user) {
+        if (user.getRole().equals("ROLE_USER") || user.getRole().equals("ROLE_ADMIN")){
+            return "Please give role as ROLE_USER or ROLE_ADMIN";
+        }
+        Optional<Users> us = userRepository.findByUsername(user.getUsername());
+        if (us.isEmpty()){
+            return "User already exist";
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole("ROLE_USER");
-        return userRepository.save(user);
+        userRepository.save(user);
+        return "User Created Successfully";
     }
 }
