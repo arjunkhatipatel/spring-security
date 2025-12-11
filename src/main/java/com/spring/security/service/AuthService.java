@@ -45,7 +45,7 @@ public class AuthService {
             return "Please give role as ROLE_USER or ROLE_ADMIN";
         }
         Optional<Users> us = userRepository.findByUsername(user.getUsername());
-        if (us.isEmpty()){
+        if (!us.isEmpty()){
             return "User already exist";
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
