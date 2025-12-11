@@ -41,7 +41,7 @@ public class AuthService {
     }
 
     public String signup(Users user) {
-        if (user.getRole().equals("ROLE_USER") || user.getRole().equals("ROLE_ADMIN")){
+        if (!user.getRole().equals("ROLE_USER") || !user.getRole().equals("ROLE_ADMIN")){
             return "Please give role as ROLE_USER or ROLE_ADMIN";
         }
         Optional<Users> us = userRepository.findByUsername(user.getUsername());
